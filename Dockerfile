@@ -1,15 +1,21 @@
-FROM dunglas/frankenphp
+FROM php:8.2-cli
 
-WORKDIR /app
-
-COPY . .
-
-RUN install-php-extensions pdo_mysql zip
+RUN apt-get update && apt-get install -y \
+    git unzip zip libzip-dev \
+    && docker-php-ext-install pdo pdo_mysql zip
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+WORKDIR /var/www
+
+COPY . .
+
 RUN composer install --no-dev --optimize-autoloader
 
-EXPOSE 8080
+RUN php artisan config:clear || true
+RUN php artisan route:clear || true
+RUN php artisan view:clear || true
 
-CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+EXPOSE 10000
+
+CMD php artisan serve --host=0.0.0.0 --port=$PORT
