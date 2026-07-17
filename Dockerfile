@@ -1,8 +1,9 @@
-FROM php:8.2-cli
+FROM php:8.2-fpm
 
 RUN apt-get update && apt-get install -y \
-    git unzip zip libzip-dev \
-    && docker-php-ext-install pdo pdo_mysql zip
+    git unzip zip libzip-dev nginx \
+    && docker-php-ext-install pdo pdo_mysql zip \
+    && apt-get clean
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
@@ -16,6 +17,11 @@ RUN php artisan config:clear || true
 RUN php artisan route:clear || true
 RUN php artisan view:clear || true
 
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+COPY nginx.conf /etc/nginx/sites-available/default
+
 EXPOSE 10000
 
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+CMD service php8.2-fpm start && nginx -g "daemon off;"
