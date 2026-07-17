@@ -24,4 +24,4 @@ COPY nginx.conf /etc/nginx/sites-available/default
 
 EXPOSE 10000
 
-CMD service php8.2-fpm start && nginx -g "daemon off;"
+CMD php-fpm -D && nginx -g "daemon off;"
