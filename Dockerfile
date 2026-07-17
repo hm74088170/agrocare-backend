@@ -24,4 +24,6 @@ COPY nginx.conf /etc/nginx/sites-available/default
 
 EXPOSE 10000
 
+RUN echo "Build Commit: $(date)"
+
 CMD php-fpm -D && nginx -g "daemon off;"
